@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="geometry-dash-clone.vcxproj" Id="9863d4f0-4a64-4c76-853b-8f1a0a311138" />
+</Solution>
