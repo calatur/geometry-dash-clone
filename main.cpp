@@ -4,7 +4,7 @@
 
 int main()
 {   
-	sf::Texture texture("playersprite.png");
+	sf::Texture texture("Assets\\Sprites\\playersprite.png");
 	texture.setSmooth(true);
     sf::Sprite player(texture);
     player.setPosition({ 50.f, 500.f });
