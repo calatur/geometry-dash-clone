@@ -4,13 +4,10 @@
 
 int main()
 {   
-    //sf::RectangleShape shape({50.0f, 50.0f});
-    //shape.setFillColor(sf::Color::Yellow);
-
 	sf::Texture texture("playersprite.png");
 	texture.setSmooth(true);
     sf::Sprite player(texture);
-    player.setPosition({ 50.f, 550.f });
+    player.setPosition({ 50.f, 500.f });
 
 
     bool canjump = true, canjump1 = false;
@@ -30,7 +27,7 @@ int main()
 
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && !canjump && player.getPosition().y >= 545.0f && !canjump1) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && !canjump && player.getPosition().y >= 495.0f && !canjump1) {
             canjump = true;
 			canjump1 = true;
         }
@@ -43,12 +40,12 @@ int main()
 		}
 
 
-        if (player.getPosition().y < 550.0f && !canjump) {
+        if (player.getPosition().y < 500.0f && !canjump) {
             player.move({0.f, 450.f*deltaTime});
         }
 
-        if (player.getPosition().y >= 545.0f && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) && canjump1) {
-            player.setPosition({ player.getPosition().x, 550.0f });
+        if (player.getPosition().y >= 495.0f && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) && canjump1) {
+            player.setPosition({ player.getPosition().x, 500.0f });
             //canjump = true;
             canjump1 = false;
         }
