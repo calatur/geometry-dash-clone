@@ -2,15 +2,61 @@
 #include <optional>
 #include<iostream>
 
+void game(sf::RenderWindow& window);
+void mmenu(sf::RenderWindow& window);
 
+
+int main()
+{
+    bool play = true;
+    bool start = false;
+
+    sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "SFML Test");
+    window.setKeyRepeatEnabled(false);
+    if (play) {
+        mmenu(window);
+    }
+
+    return 0;
+}
+
+
+void mmenu(sf::RenderWindow& window) {
+    sf::Texture mainmenutexture("Assets\\Sprites\\mainmenu.png");
+    sf::Sprite mainmenu(mainmenutexture);
+    mainmenu.setPosition({ 0.f, 0.f });
+    while (window.isOpen()) {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C)
+                {
+					window.close();
+                }
+            }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
+            game(window);
+        }
+        window.clear();
+        window.draw(mainmenu);
+        window.display();
+    }
+}
 
 void game(sf::RenderWindow& window) {
-
-    float jumprotate = 433.7349f, jumpspeed = 500.f, groundlevel = 450.f, maxjump = 200.f, xorigin = 150;
+    float jumprotate = 433.7349f, 
+        jumpspeed = 500.f, 
+        groundlevel = 450.f, 
+        maxjump = 200.f, 
+        xorigin = 150;
 
     sf::Texture ptexture("Assets\\Sprites\\playersprite.png");
     ptexture.setSmooth(true);
-
 	sf::Texture btexture("Assets\\Sprites\\background.png");
 	btexture.setSmooth(true);
     sf::Sprite background(btexture);
@@ -19,16 +65,12 @@ void game(sf::RenderWindow& window) {
 	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
 	otexture.setSmooth(true);
 
-
-
     sf::Sprite player(ptexture);
     player.setOrigin({50, 50});
     player.setPosition({ xorigin, groundlevel });
 
-
-    bool canjump = true, canjump1 = false;
-   
-
+    bool canjump = true, 
+        canjump1 = false;
     sf::Clock clock;
     float deltaTime;
 
@@ -37,11 +79,19 @@ void game(sf::RenderWindow& window) {
     {
         deltaTime = clock.restart().asSeconds();
 
-		//loop in sample on the official SFML website, if this is changed, the window stops responding
         while (const std::optional event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>())
+            if (event->is<sf::Event::Closed>()) {
                 window.close();
+            }
+
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C)
+                {
+                    return;
+                }
+            }
         }
 
         if (player.getPosition().y >= groundlevel -5.f) {
@@ -62,12 +112,18 @@ void game(sf::RenderWindow& window) {
             player.rotate(sf::degrees(jumprotate * deltaTime));
         }
 
-        if (player.getPosition().y >= groundlevel - 5.f && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) && canjump1) {
+        if (player.getPosition().y >= groundlevel - 5.f 
+            && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) 
+            && canjump1) 
+        {
             player.setPosition({ player.getPosition().x, groundlevel });
             canjump1 = false;
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && !canjump && player.getPosition().y >= groundlevel - 5.f && !canjump1) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)
+            && !canjump && player.getPosition().y >= groundlevel - 5.f &&
+            !canjump1) 
+        {
             canjump = true;
             canjump1 = true;
         }
@@ -79,19 +135,3 @@ void game(sf::RenderWindow& window) {
     }
 }
 
-int main()
-{   
-    bool play = false;
-	std::cout << "Play the game? (1 for yes, 0 for no): ";
-	std::cin >> play;
-    if (play) {
-        sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "SFML Test");
-
-        if (play) {
-            game(window);
-        }
-    }
-	std::cout << "Exiting the game. Goodbye!" << std::endl;
-
-    return 0;
-}
