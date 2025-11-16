@@ -6,13 +6,17 @@
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
+void saveRun(int score);
+void loadScores();
 
 
 sf::Font font;
 
 int main()
 {
-    font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf");
+    if (!(font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf"))) {
+        std::cout << "could not open font file";
+    }
     bool play = true;
     bool start = false;
 
@@ -87,8 +91,10 @@ void game(sf::RenderWindow& window) {
 
     sf::Text scoretext(font, sscore);
     sf::Text scoreheader(font, "SCORE: ");
+	sf::Text controls(font, "Z:   JUMP\nC:   MENU");
     scoreheader.setPosition({ 25.f, 100.f });
     scoretext.setPosition({ 150.f, 100.f });
+    controls.setPosition({25.f, 10.f});
 
     while (window.isOpen())
     {
@@ -148,6 +154,7 @@ void game(sf::RenderWindow& window) {
 
         window.clear();
         window.draw(background);
+        window.draw(controls);
 		window.draw(scoreheader);
         window.draw(scoretext);
         window.draw(player);
@@ -171,4 +178,12 @@ int score(sf::Clock& clock) {
     }
 
     return (int)(clock.getElapsedTime().asMilliseconds()/scale * bonus);
+}
+
+void saveRun(int score) {
+
+}
+
+void loadScores() {
+
 }
