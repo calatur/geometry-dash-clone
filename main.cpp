@@ -8,9 +8,20 @@ void game(sf::RenderWindow& window) {
 
     float jumprotate = 433.7349f, jumpspeed = 500.f, groundlevel = 450.f, maxjump = 200.f, xorigin = 150;
 
-    sf::Texture texture("Assets\\Sprites\\playersprite.png");
-    texture.setSmooth(true);
-    sf::Sprite player(texture);
+    sf::Texture ptexture("Assets\\Sprites\\playersprite.png");
+    ptexture.setSmooth(true);
+
+	sf::Texture btexture("Assets\\Sprites\\background.png");
+	btexture.setSmooth(true);
+    sf::Sprite background(btexture);
+	background.setPosition({ 0.f, 0.f });
+
+	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
+	otexture.setSmooth(true);
+
+
+
+    sf::Sprite player(ptexture);
     player.setOrigin({50, 50});
     player.setPosition({ xorigin, groundlevel });
 
@@ -62,6 +73,7 @@ void game(sf::RenderWindow& window) {
         }
 
         window.clear();
+        window.draw(background);
         window.draw(player);
         window.display();
     }
