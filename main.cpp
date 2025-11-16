@@ -1,13 +1,18 @@
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include<iostream>
+#include<string>
 
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
+int score(sf::Clock& clock);
 
+
+sf::Font font;
 
 int main()
 {
+    font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf");
     bool play = true;
     bool start = false;
 
@@ -49,14 +54,20 @@ void mmenu(sf::RenderWindow& window) {
 }
 
 void game(sf::RenderWindow& window) {
+
     float jumprotate = 433.7349f, 
         jumpspeed = 500.f, 
         groundlevel = 450.f, 
         maxjump = 200.f, 
-        xorigin = 150;
+        xorigin = 150,
+        deltaTime;
 
     sf::Texture ptexture("Assets\\Sprites\\playersprite.png");
     ptexture.setSmooth(true);
+    sf::Sprite player(ptexture);
+    player.setOrigin({ 50, 50 });
+    player.setPosition({ xorigin, groundlevel });
+
 	sf::Texture btexture("Assets\\Sprites\\background.png");
 	btexture.setSmooth(true);
     sf::Sprite background(btexture);
@@ -65,19 +76,27 @@ void game(sf::RenderWindow& window) {
 	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
 	otexture.setSmooth(true);
 
-    sf::Sprite player(ptexture);
-    player.setOrigin({50, 50});
-    player.setPosition({ xorigin, groundlevel });
-
     bool canjump = true, 
         canjump1 = false;
-    sf::Clock clock;
-    float deltaTime;
 
+    sf::Clock clock, scoreclock;
+    int cscore = 0;
+
+    std::string sscore = "";
+
+
+    sf::Text scoretext(font, sscore);
+    sf::Text scoreheader(font, "SCORE: ");
+    scoreheader.setPosition({ 25.f, 100.f });
+    scoretext.setPosition({ 150.f, 100.f });
 
     while (window.isOpen())
     {
         deltaTime = clock.restart().asSeconds();
+
+        cscore =  score(scoreclock);
+		sscore = std::to_string(cscore);
+        scoretext.setString(sscore);
 
         while (const std::optional event = window.pollEvent())
         {
@@ -106,7 +125,6 @@ void game(sf::RenderWindow& window) {
             canjump = false;
         }
 
-
         if (player.getPosition().y < groundlevel && !canjump) {
             player.move({ 0.f, jumpspeed * deltaTime });
             player.rotate(sf::degrees(jumprotate * deltaTime));
@@ -130,8 +148,27 @@ void game(sf::RenderWindow& window) {
 
         window.clear();
         window.draw(background);
+		window.draw(scoreheader);
+        window.draw(scoretext);
         window.draw(player);
         window.display();
     }
 }
 
+int score(sf::Clock& clock) {
+
+    int bonus = 1;
+    int scale = 50;
+
+    if (clock.getElapsedTime().asMilliseconds()/scale > 100) {
+        bonus = 2;
+    }
+    else if (clock.getElapsedTime().asMilliseconds()/scale > 300) {
+        bonus = 3;
+    }
+    else if (clock.getElapsedTime().asMilliseconds()/scale > 1000) {
+        bonus = 4;
+    }
+
+    return (int)(clock.getElapsedTime().asMilliseconds()/scale * bonus);
+}
