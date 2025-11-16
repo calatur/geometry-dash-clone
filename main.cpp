@@ -3,15 +3,20 @@
 #include<iostream>
 
 
+
 void game(sf::RenderWindow& window) {
+
+    float jumprotate = 433.7349f, jumpspeed = 500.f, groundlevel = 450.f, maxjump = 200.f, xorigin = 150;
 
     sf::Texture texture("Assets\\Sprites\\playersprite.png");
     texture.setSmooth(true);
     sf::Sprite player(texture);
-    player.setPosition({ 50.f, 500.f });
+    player.setOrigin({50, 50});
+    player.setPosition({ xorigin, groundlevel });
 
 
     bool canjump = true, canjump1 = false;
+   
 
     sf::Clock clock;
     float deltaTime;
@@ -28,26 +33,32 @@ void game(sf::RenderWindow& window) {
                 window.close();
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && !canjump && player.getPosition().y >= 495.0f && !canjump1) {
-            canjump = true;
-            canjump1 = true;
+        if (player.getPosition().y >= groundlevel -5.f) {
+            player.setRotation(sf::degrees(0.f));
         }
 
         if (canjump) {
-            player.move({ 0.0f, (-500.f * deltaTime) });
+            player.move({ 0.0f, (-(jumpspeed) * deltaTime) });
+            player.rotate(sf::degrees(jumprotate * deltaTime));
         }
-        if (player.getPosition().y <= 350.f && canjump) {
+        if (player.getPosition().y <= groundlevel - maxjump && canjump) {
             canjump = false;
         }
 
 
-        if (player.getPosition().y < 500.0f && !canjump) {
-            player.move({ 0.f, 450.f * deltaTime });
+        if (player.getPosition().y < groundlevel && !canjump) {
+            player.move({ 0.f, jumpspeed * deltaTime });
+            player.rotate(sf::degrees(jumprotate * deltaTime));
         }
 
-        if (player.getPosition().y >= 495.0f && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) && canjump1) {
-            player.setPosition({ player.getPosition().x, 500.0f });
+        if (player.getPosition().y >= groundlevel - 5.f && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) && canjump1) {
+            player.setPosition({ player.getPosition().x, groundlevel });
             canjump1 = false;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && !canjump && player.getPosition().y >= groundlevel - 5.f && !canjump1) {
+            canjump = true;
+            canjump1 = true;
         }
 
         window.clear();
@@ -62,7 +73,7 @@ int main()
 	std::cout << "Play the game? (1 for yes, 0 for no): ";
 	std::cin >> play;
     if (play) {
-        sf::RenderWindow window(sf::VideoMode({ 800, 640 }), "SFML Test");
+        sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "SFML Test");
 
         if (play) {
             game(window);
