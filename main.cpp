@@ -50,7 +50,13 @@ void mmenu(sf::RenderWindow& window) {
             }
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
+            //instead of loading game, display an intermediate screen (new function) to ask for the run's name
+            // run's name will be a character array of fixed size
+			//Then pass that name to game function to save the run under that name.
+            //That name will be passed to the saveRun() function along with the score in that run
+            //to store in a binary file
             game(window);
+			//when the game function returns, return the intermediate screen to main menu
         }
         window.clear();
         window.draw(mainmenu);
@@ -114,7 +120,7 @@ void game(sf::RenderWindow& window) {
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C)
-                {
+                {   //save here
                     return;
                 }
             }
