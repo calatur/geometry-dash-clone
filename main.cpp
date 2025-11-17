@@ -144,12 +144,20 @@ void game(sf::RenderWindow& window) {
             canjump1 = false;
         }
 
+
+
+
+        //play jump sound
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)
             && !canjump && player.getPosition().y >= groundlevel - 5.f &&
             !canjump1) 
         {
             canjump = true;
             canjump1 = true;
+
+			//logic here to play jump sound
+
+
         }
 
         window.clear();
