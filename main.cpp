@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <optional>
 #include<iostream>
 #include<string>
@@ -103,6 +104,15 @@ void game(sf::RenderWindow& window) {
     scoretext.setPosition({ 150.f, 100.f });
     controls.setPosition({25.f, 10.f});
 
+
+    sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("Assets\\Sounds\\beep.wav")) {
+        std::cout << "Sound file not found!" << std::endl;
+        return;
+    }
+    sf::Sound beep(buffer);
+
+
     while (window.isOpen())
     {
         deltaTime = clock.restart().asSeconds();
@@ -154,17 +164,14 @@ void game(sf::RenderWindow& window) {
 
 
 
-        //play jump sound
+        
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)
             && !canjump && player.getPosition().y >= groundlevel - 5.f &&
             !canjump1) 
         {
             canjump = true;
             canjump1 = true;
-
-			//logic here to play jump sound
-
-
+            beep.play();
         }
 
         window.clear();
