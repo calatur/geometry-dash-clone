@@ -2,6 +2,7 @@
 #include <optional>
 #include<iostream>
 #include<string>
+#include<fstream>
 //test change abdullah
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
@@ -100,7 +101,7 @@ void game(sf::RenderWindow& window) {
     {
         deltaTime = clock.restart().asSeconds();
 
-        cscore =  score(scoreclock);
+		cscore = score(scoreclock); //score calculation in cscore, store cscore when run ends (pressed C or ran into obstacles)
 		sscore = std::to_string(cscore);
         scoretext.setString(sscore);
 
