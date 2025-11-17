@@ -10,7 +10,7 @@ void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
 void saveRun(int score);
 void loadScores();
-
+bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 
 sf::Font font;
 
@@ -87,6 +87,14 @@ void game(sf::RenderWindow& window) {
 
 	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
 	otexture.setSmooth(true);
+
+    sf::ConvexShape obstacle;
+    obstacle.setPointCount(3);
+    obstacle.setPoint(0, sf::Vector2f(0, 90));
+    obstacle.setPoint(1, sf::Vector2f(80, 90));
+    obstacle.setPoint(2, sf::Vector2f(40, 0));
+    obstacle.setFillColor(sf::Color::White);
+    float obsSpeed = 550.f;
 
     bool canjump = true, 
         canjump1 = false;
@@ -174,15 +182,43 @@ void game(sf::RenderWindow& window) {
             beep.play();
         }
 
+        obstacle.move({ -obsSpeed * deltaTime, 0 });
+        if (obstacle.getPosition().x < -100) {
+            obstacle.setPosition({ 900, 416 });
+        }
+        if (checkCollision(player, obstacle))
+        {
+            std::cout << "Collision!\n";
+            //save Run and Name;
+            return; // back to menu
+        }
+
         window.clear();
         window.draw(background);
         window.draw(controls);
 		window.draw(scoreheader);
         window.draw(scoretext);
         window.draw(player);
+        window.draw(obstacle);
         window.display();
     }
 }
+
+bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle)
+{
+    sf::FloatRect playerBounds = player.getGlobalBounds();
+
+    // Check each Obstacle point
+    for (size_t i = 0; i < obstacle.getPointCount(); ++i)
+    {
+        sf::Vector2f point = obstacle.getTransform().transformPoint(obstacle.getPoint(i));
+        if (playerBounds.contains(point))
+            return true;
+    }
+
+    return false;
+}
+
 
 int score(sf::Clock& clock) {
 
