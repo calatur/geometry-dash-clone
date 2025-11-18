@@ -12,9 +12,10 @@ void enterName(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
 void saveRun(std::string , int score);
-void loadScores();
+void loadScores(sf::RenderWindow& window);
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 sf::ConvexShape* setObstacles(const int n);
+void quitGame(sf::RenderWindow& window);
 
 sf::Font font;
 
@@ -24,14 +25,11 @@ int main()
     if (!(font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf"))) {
         std::cout << "could not open font file";
     }
-    bool play = true;
-    bool start = false;
 
-    sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "SFML Test");
+    sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "Geomentry Dash Endless");
     window.setKeyRepeatEnabled(false);
-    if (play) {
         mmenu(window);
-    }
+
 
     return 0;
 }
@@ -51,12 +49,17 @@ void mmenu(sf::RenderWindow& window) {
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C)
                 {
-					window.close();
+					quitGame(window);
                 }
 
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z)
                 {
 					enterName(window);
+                }
+
+                if (keyPressed->scancode == sf::Keyboard::Scan::X)
+                {
+					loadScores(window);
                 }
             }
         }
@@ -145,7 +148,7 @@ int game(sf::RenderWindow& window) {
     {
         deltaTime = clock.restart().asSeconds();
 
-		cscore = score(scoreclock); //score calculation in cscore, store cscore when run ends (pressed C or ran into obstacles)
+		cscore = score(scoreclock);
 		sscore = std::to_string(cscore);
         scoretext.setString(sscore);
 
@@ -162,8 +165,7 @@ int game(sf::RenderWindow& window) {
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
-                if (keyPressed->scancode == sf::Keyboard::Scan::C)
-                {   //save here
+                if (keyPressed->scancode == sf::Keyboard::Scan::C){
                     delete[] obstacle;
 					std::cout << "deleted obstacles" << std::endl;
                     return cscore;
@@ -305,10 +307,38 @@ void saveRun(std::string name, int score) {
 //
 //
 //
-void loadScores() {
+void loadScores(sf::RenderWindow& window) {
 
+	sf::Text scoreheader(font, "HIGH SCORES:");
+	scoreheader.setPosition({ 400.f, 50.f });
+
+
+    while (window.isOpen()) {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C) {
+                    return;
+                }
+            }
+
+
+        }
+        
+        window.clear();
+        window.draw(scoreheader);
+        window.display();
+    }
 }
-
+//
+//
+//
+//
 void enterName(sf::RenderWindow& window) {
 
 	sf::Text entername(font, "ENTER NAME:");
@@ -365,4 +395,43 @@ void enterName(sf::RenderWindow& window) {
 		window.display();
     }
 
+}
+
+void quitGame(sf::RenderWindow& window){
+
+    sf::Text quittext(font, "QUIT GAME?");
+    sf::Text confirmtext(font, "YES (Z)\tNo (C)");
+
+    quittext.setPosition({ 400.f, 250.f });
+    confirmtext.setPosition({ 350.f, 300.f });
+
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C) {
+                    return;
+                }
+            }
+
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::Z) {
+                    window.close();
+                }
+            }
+
+            window.clear();
+            window.draw(quittext);
+			window.draw(confirmtext);
+            window.display();
+
+        }
+    }
 }
