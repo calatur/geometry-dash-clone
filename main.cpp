@@ -16,6 +16,7 @@ void loadScores(sf::RenderWindow& window);
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 sf::ConvexShape* setObstacles(const int n);
 int quitGame(sf::RenderWindow& window);
+void lost(sf::RenderWindow& window, int score);
 
 sf::Font font;
 
@@ -236,6 +237,7 @@ int game(sf::RenderWindow& window) {
             if (checkCollision(player, obstacle[i])) {
                 delete[] obstacle;
                 std::cout << "deleted obstacles" << std::endl;
+				lost(window, cscore);
                 return cscore;
             }
         }
@@ -318,8 +320,9 @@ void saveRun(std::string name, int score) {
 void loadScores(sf::RenderWindow& window) {
 
 	sf::Text scoreheader(font, "HIGH SCORES:");
+	sf::Text returnmenu(font, "(PRESS C TO RETURN TO MENU)");
 	scoreheader.setPosition({ 400.f, 50.f });
-
+	returnmenu.setPosition({ 275.f, 550.f });
 
     while (window.isOpen()) {
         while (const std::optional event = window.pollEvent())
@@ -340,6 +343,7 @@ void loadScores(sf::RenderWindow& window) {
         
         window.clear();
         window.draw(scoreheader);
+		window.draw(returnmenu);
         window.display();
     }
 }
@@ -442,5 +446,33 @@ int quitGame(sf::RenderWindow& window){
             window.display();
 
         }
+    }
+}
+
+void lost(sf::RenderWindow& window, int score) {
+    sf::Text losttext(font, "YOU LOST!");
+    sf::Text scoretext(font, "SCORE: " + std::to_string(score));
+    sf::Text menutext(font, "PRESS ANY KEY TO RETURN TO MENU");
+    losttext.setPosition({ 400.f, 200.f });
+    scoretext.setPosition({ 400.f, 250.f });
+    menutext.setPosition({ 200.f, 300.f });
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                return;
+            }
+        }
+
+        window.clear();
+        window.draw(losttext);
+        window.draw(scoretext);
+        window.draw(menutext);
+        window.display();
     }
 }
