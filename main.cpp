@@ -6,7 +6,7 @@
 #include<fstream>
 #include<ctime>
 #include<cstdlib>
-//test change abdullah
+
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
@@ -141,6 +141,8 @@ void game(sf::RenderWindow& window) {
 
     std::string sscore = "";
 
+	int speeds[5] = { 550, 700, 750, 800, 1000 };
+	int mins[5] = { 475, 550, 625, 690, 730 };
 
     sf::Text scoretext(font, sscore);
     sf::Text scoreheader(font, "SCORE: ");
@@ -158,6 +160,7 @@ void game(sf::RenderWindow& window) {
     sf::Sound beep(buffer);
 
     bool spaces = true;
+    int i;
 
     while (window.isOpen())
     {
@@ -166,6 +169,11 @@ void game(sf::RenderWindow& window) {
 		cscore = score(scoreclock); //score calculation in cscore, store cscore when run ends (pressed C or ran into obstacles)
 		sscore = std::to_string(cscore);
         scoretext.setString(sscore);
+
+        if (cscore < 2100) {
+            obsSpeed = speeds[cscore / 500];
+            min = mins[cscore / 500];
+        }
 
         while (const std::optional event = window.pollEvent())
         {
@@ -216,30 +224,22 @@ void game(sf::RenderWindow& window) {
             beep.play();
         }
 
-
-        int i;
-
         for (i = 0; i < 3; i++) {
             obstacle[i].move({ -obsSpeed * deltaTime, 0 });
             positions[i].x -= obsSpeed * deltaTime;
+            if (obstacle[i].getPosition().x < -100) {
+                if (i == 0) {
+                    positions[i].x = positions[2].x + rand() % 200 + min;;
+                    obstacle[i].setPosition(positions[i]);
+                }
+                else {
+                    positions[i].x = positions[i-1].x + rand() % 200 + min;;
+                    obstacle[i].setPosition(positions[i]);
+                }
+
+                obstacle[i].setFillColor(sf::Color(rand() % 256, rand()%256, rand()%256));
+            }
         }
-
-
-        if (obstacle[0].getPosition().x < -100) {
-            positions[0].x = positions[2].x + rand() % 200 + min;;
-                obstacle[0].setPosition(positions[0]);
-        }
-
-        if (obstacle[1].getPosition().x < -100) {
-                positions[1].x = positions[0].x + rand() % 200 + min;
-                obstacle[1].setPosition(positions[1]);
-        }
-
-        if (obstacle[2].getPosition().x < -100) {
-                positions[2].x = positions[1].x + rand() % 200 + min;
-                obstacle[2].setPosition(positions[2]);
-        }
-
 
         for (i = 0; i < 3; i++) {
             if (checkCollision(player, obstacle[i])) {
