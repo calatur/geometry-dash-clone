@@ -4,6 +4,8 @@
 #include<iostream>
 #include<string>
 #include<fstream>
+#include<ctime>
+#include<cstdlib>
 //test change abdullah
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
@@ -16,6 +18,7 @@ sf::Font font;
 
 int main()
 {
+    srand(time(0));
     if (!(font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf"))) {
         std::cout << "could not open font file";
     }
@@ -48,17 +51,22 @@ void mmenu(sf::RenderWindow& window) {
                 {
 					window.close();
                 }
+
+                if (keyPressed->scancode == sf::Keyboard::Scan::Z)
+                {
+                    game(window);
+                }
             }
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
-            //instead of loading game, display an intermediate screen (new function) to ask for the run's name
-            // run's name will be a character array of fixed size
-			//Then pass that name to game function to save the run under that name.
-            //That name will be passed to the saveRun() function along with the score in that run
-            //to store in a binary file
-            game(window);
-			//when the game function returns, return the intermediate screen to main menu
-        }
+   //     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
+   //         //instead of loading game, display an intermediate screen (new function) to ask for the run's name
+   //         // run's name will be a character array of fixed size
+			////Then pass that name to game function to save the run under that name.
+   //         //That name will be passed to the saveRun() function along with the score in that run
+   //         //to store in a binary file
+   //         game(window);
+			////when the game function returns, return the intermediate screen to main menu
+   //     }
         window.clear();
         window.draw(mainmenu);
         window.display();
@@ -88,15 +96,44 @@ void game(sf::RenderWindow& window) {
 	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
 	otexture.setSmooth(true);
 
-    sf::ConvexShape obstacle;
-    obstacle.setPointCount(3);
-    obstacle.setPoint(0, sf::Vector2f(0, 90));
-    obstacle.setPoint(1, sf::Vector2f(80, 90));
-    obstacle.setPoint(2, sf::Vector2f(40, 0));
-    obstacle.setFillColor(sf::Color::White);
-    float obsSpeed = 550.f;
 
-    bool canjump = true, 
+    sf::ConvexShape obstacle[3];
+    obstacle[0].setPointCount(3);
+    obstacle[0].setPoint(0, sf::Vector2f(0, 90));
+    obstacle[0].setPoint(1, sf::Vector2f(80, 90));
+    obstacle[0].setPoint(2, sf::Vector2f(40, 0));
+    obstacle[0].setFillColor(sf::Color::Red);
+
+    obstacle[1].setPointCount(3);
+    obstacle[1].setPoint(0, sf::Vector2f(0, 90));
+    obstacle[1].setPoint(1, sf::Vector2f(80, 90));
+    obstacle[1].setPoint(2, sf::Vector2f(40, 0));
+    obstacle[1].setFillColor(sf::Color::Green);
+
+    obstacle[2].setPointCount(3);
+    obstacle[2].setPoint(0, sf::Vector2f(0, 90));
+    obstacle[2].setPoint(1, sf::Vector2f(80, 90));
+    obstacle[2].setPoint(2, sf::Vector2f(40, 0));
+    obstacle[2].setFillColor(sf::Color::Blue);
+
+    sf::Vector2f positions[3];
+    positions[0].x = 1000;
+    positions[1].x = 1500;
+    positions[2].x = 2000;
+
+    positions[0].y = 416;
+    positions[1].y = 416;
+    positions[2].y = 416;
+
+
+    obstacle[0].setPosition({1000, 416});
+    obstacle[1].setPosition({1600 , 416});
+    obstacle[2].setPosition({2100, 416});
+
+    float obsSpeed = 550.f;
+    int min = 475;
+
+    bool canjump = false, 
         canjump1 = false;
 
     sf::Clock clock, scoreclock;
@@ -120,6 +157,7 @@ void game(sf::RenderWindow& window) {
     }
     sf::Sound beep(buffer);
 
+    bool spaces = true;
 
     while (window.isOpen())
     {
@@ -168,10 +206,6 @@ void game(sf::RenderWindow& window) {
             player.setPosition({ player.getPosition().x, groundlevel });
             canjump1 = false;
         }
-
-
-
-
         
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)
             && !canjump && player.getPosition().y >= groundlevel - 5.f &&
@@ -182,15 +216,35 @@ void game(sf::RenderWindow& window) {
             beep.play();
         }
 
-        obstacle.move({ -obsSpeed * deltaTime, 0 });
-        if (obstacle.getPosition().x < -100) {
-            obstacle.setPosition({ 900, 416 });
+
+        int i;
+
+        for (i = 0; i < 3; i++) {
+            obstacle[i].move({ -obsSpeed * deltaTime, 0 });
+            positions[i].x -= obsSpeed * deltaTime;
         }
-        if (checkCollision(player, obstacle))
-        {
-            std::cout << "Collision!\n";
-            //save Run and Name;
-            return; // back to menu
+
+
+        if (obstacle[0].getPosition().x < -100) {
+            positions[0].x = positions[2].x + rand() % 200 + min;;
+                obstacle[0].setPosition(positions[0]);
+        }
+
+        if (obstacle[1].getPosition().x < -100) {
+                positions[1].x = positions[0].x + rand() % 200 + min;
+                obstacle[1].setPosition(positions[1]);
+        }
+
+        if (obstacle[2].getPosition().x < -100) {
+                positions[2].x = positions[1].x + rand() % 200 + min;
+                obstacle[2].setPosition(positions[2]);
+        }
+
+
+        for (i = 0; i < 3; i++) {
+            if (checkCollision(player, obstacle[i])) {
+                return;
+            }
         }
 
         window.clear();
@@ -199,7 +253,9 @@ void game(sf::RenderWindow& window) {
 		window.draw(scoreheader);
         window.draw(scoretext);
         window.draw(player);
-        window.draw(obstacle);
+        for(i=0; i<3; i++)
+            window.draw(obstacle[i]);
+
         window.display();
     }
 }
@@ -207,8 +263,6 @@ void game(sf::RenderWindow& window) {
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle)
 {
     sf::FloatRect playerBounds = player.getGlobalBounds();
-
-    // Check each Obstacle point
     for (size_t i = 0; i < obstacle.getPointCount(); ++i)
     {
         sf::Vector2f point = obstacle.getTransform().transformPoint(obstacle.getPoint(i));
