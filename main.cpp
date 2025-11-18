@@ -60,15 +60,7 @@ void mmenu(sf::RenderWindow& window) {
                 }
             }
         }
-   //     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
-   //         //instead of loading game, display an intermediate screen (new function) to ask for the run's name
-   //         // run's name will be a character array of fixed size
-			////Then pass that name to game function to save the run under that name.
-   //         //That name will be passed to the saveRun() function along with the score in that run
-   //         //to store in a binary file
-   //         game(window);
-			////when the game function returns, return the intermediate screen to main menu
-   //     }
+
         window.clear();
         window.draw(mainmenu);
         window.display();
@@ -347,14 +339,14 @@ void enterName(sf::RenderWindow& window) {
                     }
                 }
 
-                else if (keyPressed->unicode < 128 && keyPressed -> unicode != 13) // Ensure it's an ASCII character
+                else if (keyPressed->unicode < 128 && keyPressed -> unicode != 13)
                 {
                     userInput += static_cast<char>(keyPressed->unicode);
                     playerName = userInput.toAnsiString();
 				}
 
                 else {
-                    if (keyPressed->unicode == 13) { // Enter key
+                    if (keyPressed->unicode == 13) {
                         std::cout << "Player Name: " << playerName << std::endl;
                         int score = game(window);
 						saveRun(playerName, score);
