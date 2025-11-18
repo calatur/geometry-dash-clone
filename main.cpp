@@ -15,7 +15,7 @@ void saveRun(std::string , int score);
 void loadScores(sf::RenderWindow& window);
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 sf::ConvexShape* setObstacles(const int n);
-void quitGame(sf::RenderWindow& window);
+int quitGame(sf::RenderWindow& window);
 
 sf::Font font;
 
@@ -28,7 +28,8 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "Geomentry Dash Endless");
     window.setKeyRepeatEnabled(false);
-        mmenu(window);
+    mmenu(window);
+    window.close();
 
 
     return 0;
@@ -49,7 +50,10 @@ void mmenu(sf::RenderWindow& window) {
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C)
                 {
-					quitGame(window);
+                    if (quitGame(window)) {
+                        return;
+                    }
+                    
                 }
 
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z)
@@ -166,10 +170,14 @@ int game(sf::RenderWindow& window) {
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C){
-                    delete[] obstacle;
-					std::cout << "deleted obstacles" << std::endl;
-                    return cscore;
-                }
+                    scoreclock.stop();
+                    if (quitGame(window)) {
+						delete[] obstacle;
+                        std::cout << "deleted obstacles" << std::endl;
+                        return cscore;
+                    }
+                    scoreclock.start();
+               }
             }
         }
 
@@ -397,7 +405,7 @@ void enterName(sf::RenderWindow& window) {
 
 }
 
-void quitGame(sf::RenderWindow& window){
+int quitGame(sf::RenderWindow& window){
 
     sf::Text quittext(font, "QUIT GAME?");
     sf::Text confirmtext(font, "YES (Z)\tNo (C)");
@@ -416,14 +424,15 @@ void quitGame(sf::RenderWindow& window){
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C) {
-                    return;
+                    return 0;
                 }
             }
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z) {
-                    window.close();
+                    return 1;
+                    //window.close();
                 }
             }
 
