@@ -10,7 +10,7 @@
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
-void saveRun(int score, sf::RenderWindow& window);
+void saveRun(sf::RenderWindow& window);
 void loadScores();
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 void loadScores(sf::RenderWindow& window);
@@ -59,7 +59,7 @@ void mmenu(sf::RenderWindow& window) {
                 }
                 if (keyPressed->scancode == sf::Keyboard::Scan::X)
                 {
-                    saveRun(cscore, window);
+                    saveRun(window);
                 }
 
             }
@@ -72,7 +72,7 @@ void mmenu(sf::RenderWindow& window) {
 }
 
 void game(sf::RenderWindow& window) {
-
+	saveRun(window); //temporary, to test save/load screen
     float jumprotate = 433.7349f,
         jumpspeed = 500.f,
         groundlevel = 450.f,
@@ -166,6 +166,8 @@ void game(sf::RenderWindow& window) {
     sf::Sound jump(buffer);
 
     bool spaces = true;
+
+    
 
     while (window.isOpen())
     {
@@ -310,7 +312,7 @@ int score(sf::Clock& clock) {
     return (int)(clock.getElapsedTime().asMilliseconds() / scale * bonus);
 }
 
-void saveRun(int cscore, sf::RenderWindow& window) {
+void saveRun(sf::RenderWindow& window) {
     sf::Texture btexture("Assets\\Sprites\\background.png");
     btexture.setSmooth(true);
     sf::Sprite background(btexture);
@@ -358,7 +360,7 @@ void loadScores(sf::RenderWindow& window) {
     btexture.setSmooth(true);
     sf::Sprite background(btexture);
     background.setPosition({ 0.f, 0.f });
-    sf::Text title(font, "Previous Scores: ");
+    sf::Text title(font, "PREVIOUS SCORES: ");
     title.setPosition(sf::Vector2f{ 10, 10 });
 
     while (window.isOpen()) {
