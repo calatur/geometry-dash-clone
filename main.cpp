@@ -1,11 +1,14 @@
-#include <SFML/Graphics.hpp>
+﻿#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <optional>
 #include<iostream>
 #include<string>
+#include<cstring>
 #include<fstream>
 #include<ctime>
 #include<cstdlib>
+//#define _CRT_SECURE_NO_WARNINGS
+
 
 int game(sf::RenderWindow& window);
 void enterName(sf::RenderWindow& window);
@@ -15,6 +18,9 @@ void saveRun(std::string , int score);
 void loadScores();
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 sf::ConvexShape* setObstacles(const int n);
+void highest_score(char** name, int score[], int count);
+void display(char** name, int score[], int count);
+void Records(sf::RenderWindow& window);
 
 sf::Font font;
 
@@ -57,6 +63,11 @@ void mmenu(sf::RenderWindow& window) {
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z)
                 {
 					enterName(window);
+                }
+                if (keyPressed->scancode == sf::Keyboard::Scan::X)
+                {
+                    Records(window);
+                    //loadScores();
                 }
             }
         }
@@ -300,27 +311,106 @@ sf::ConvexShape* setObstacles(const int n) {
 //
 void saveRun(std::string name, int score) {
 	std::cout << std::endl << "Saving run for " << name << " with score " << score << std::endl;
+    std::ofstream fout("Scores.xyz", std::ios::app | std::ios::binary);
+    char arr[30] = { 0 };                     // fixed 30 bytes
+    int len = std::min(29, (int)name.size());
+    memcpy(arr, name.c_str(),len); // copy string → char array
+    fout.write(arr, 30);
+    //fout.write(name, 20);
+    fout.write((char*)&score, sizeof(score));
+    fout.close();
+
+	std::cout << "save"  << std::endl;
 }
 //
 //
 //
 //
 void loadScores() {
+    int* score1 = nullptr, n, count = 0;
+    char** name1 = nullptr;
+    char ch[30];
+
+    std::ifstream fin("Scores.xyz", std::ios::binary);
+    if (!fin) return;
+    while (fin.read((char*)ch, 30) && fin.read((char*)&n, sizeof(n))) {
+        int* arr1 = new int[count + 1];
+        char** arr2 = new char* [count + 1];
+
+        for (int i = 0; i < count; i++) {
+            arr1[i] = score1[i];
+            arr2[i] = new char[strlen(name1[i]) + 1];
+            //strcpy(arr2[i], name1[i]);
+            strcpy_s(arr2[i], strlen(name1[i]) + 1, name1[i]);
+
+        }
+
+        arr1[count] = n;
+        arr2[count] = new char[strlen(ch) + 1];
+        //strcpy(arr2[count], ch);
+        strcpy_s(arr2[count], strlen(ch) + 1, ch);
+
+
+
+        delete[] score1;
+        for (int i = 0; i < count; i++)
+            delete[] name1[i];
+        delete[] name1;
+
+        score1 = arr1;
+        name1 = arr2;
+        count++;
+    }
+    fin.close();
+    if (count == 0) {
+        std::cout << "No scores available.\n";
+        return;
+    }
+    else {
+        highest_score(name1, score1, count);
+        display(name1, score1, count);
+    }
+    delete[] score1;
+    for (int i = 0; i < count; i++)
+        delete[] name1[i];
+    delete[] name1;
 
 }
+void highest_score(char** name, int score[], int count) {
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - 1 - i; j++) {
+            if (score[j] < score[j + 1]) {
+                std::swap(score[j], score[j + 1]);
+                std::swap(name[j], name[j + 1]);
+            }
+        }
+    }
+}
+
+
+void display(char** name, int score[], int count) {
+    if (count > 5) {
+        count = 5;
+    }
+    std::cout << "Top " << count << " Players Scores:\n";
+    for (int i = 0; i < count; i++) {
+        std::cout << name[i] << " : " << score[i] << std::endl;
+    }
+}
+
 
 void enterName(sf::RenderWindow& window) {
 
-	sf::Text entername(font, "ENTER NAME:");
-	entername.setPosition({ 200, 250 });
+    sf::Text entername(font, "ENTER NAME:");
+    entername.setPosition({ 200, 250 });
 
     sf::String userInput;
-	sf::Text userinput(font, "");
-	userinput.setPosition({ 450, 250 });
+    sf::Text userinput(font, "");
+    userinput.setPosition({ 450, 250 });
 
 
     std::string playerName = userInput.toAnsiString();
-
+    bool ignoreFirstInput = true;
     while (window.isOpen())
     {
         while (const std::optional event = window.pollEvent())
@@ -331,6 +421,10 @@ void enterName(sf::RenderWindow& window) {
 
             if (const auto* keyPressed = event->getIf<sf::Event::TextEntered>())
             {
+                if (ignoreFirstInput) {
+                    ignoreFirstInput = false;
+                    continue;   // ignore first Z
+                }
                 if (keyPressed->unicode == 8) {
                     if (!userInput.isEmpty())
                     {
@@ -339,30 +433,115 @@ void enterName(sf::RenderWindow& window) {
                     }
                 }
 
-                else if (keyPressed->unicode < 128 && keyPressed -> unicode != 13)
+                else if (keyPressed->unicode < 128 && keyPressed->unicode != 13)
                 {
                     userInput += static_cast<char>(keyPressed->unicode);
                     playerName = userInput.toAnsiString();
-				}
+                }
 
                 else {
                     if (keyPressed->unicode == 13) {
                         std::cout << "Player Name: " << playerName << std::endl;
                         int score = game(window);
-						saveRun(playerName, score);
+                        while (window.pollEvent()) {}
+                        saveRun(playerName, score);
                         return;
-					}
+                    }
                 }
             }
 
-			userinput.setString(playerName);
+            userinput.setString(playerName);
         }
 
 
         window.clear();
         window.draw(entername);
         window.draw(userinput);
-		window.display();
+        window.display();
+    }
+}
+void Records(sf::RenderWindow& window) {
+    // Load scores into arrays
+    int* scores = nullptr;
+    char** names = nullptr;
+    int count = 0;
+
+    // Read scores from file
+    char ch[30];
+    std::ifstream fin("Scores.xyz", std::ios::binary);
+    if (!fin) return;
+
+    while (fin.read((char*)ch, 30)) {
+        int sc;
+        if (!fin.read((char*)&sc, sizeof(sc))) break;
+
+        // Resize arrays
+        int* newScores = new int[count + 1];
+        char** newNames = new char* [count + 1];
+
+        for (int i = 0; i < count; i++) {
+            newScores[i] = scores[i];
+            newNames[i] = new char[strlen(names[i]) + 1];
+            strcpy_s(newNames[i], strlen(names[i]) + 1, names[i]);
+        }
+
+        newScores[count] = sc;
+        newNames[count] = new char[strlen(ch) + 1];
+        strcpy_s(newNames[count], strlen(ch) + 1, ch);
+
+        delete[] scores;
+        for (int i = 0; i < count; i++) delete[] names[i];
+        delete[] names;
+
+        scores = newScores;
+        names = newNames;
+        count++;
+    }
+    fin.close();
+
+    // Sort scores descending
+    highest_score(names, scores, count);
+
+    // Display text objects
+    sf::Text title(font, "HIGH SCORES", 40);
+    title.setPosition({ 350.f, 20.f });
+    sf::Text info(font, "Press C to return to Menu", 20);
+    info.setPosition({ 300.f, 550.f });
+
+    sf::Text scoreTexts[5] = { sf::Text(font), sf::Text(font), sf::Text(font), sf::Text(font), sf::Text(font) };
+    // Up to top 5
+    int displayCount = std::min(5, count);
+    for (int i = 0; i < displayCount; i++) {
+        std::string s = std::string(names[i]) + " : " + std::to_string(scores[i]);
+        scoreTexts[i].setFont(font);
+        scoreTexts[i].setString(s);
+        scoreTexts[i].setCharacterSize(30);
+        scoreTexts[i].setPosition({ 350.f, 100.f + i * 50.f });
     }
 
+    // Event loop
+    while (window.isOpen()) {
+        while (const std::optional event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) window.close();
+
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C) {
+                    // Return to main menu
+                    for (int i = 0; i < count; i++) delete[] names[i];
+                    delete[] names;
+                    delete[] scores;
+                    return;
+                }
+            }
+        }
+
+        window.clear(sf::Color::Black);
+        window.draw(title);
+        window.draw(info);
+        for (int i = 0; i < displayCount; i++) window.draw(scoreTexts[i]);
+        window.display();
+    }
 }
+
+
+
