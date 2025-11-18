@@ -6,19 +6,19 @@
 #include<fstream>
 #include<ctime>
 #include<cstdlib>
-//test change abdullah
 void game(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
-void saveRun(int score);
+void saveRun(int score, sf::RenderWindow& window);
 void loadScores();
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 
 sf::Font font;
 
+int cscore = 0;
 int main()
 {
-    srand(time(0));
+    srand(time(NULL));
     if (!(font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf"))) {
         std::cout << "could not open font file";
     }
@@ -49,24 +49,21 @@ void mmenu(sf::RenderWindow& window) {
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C)
                 {
-					window.close();
+                    window.close();
                 }
 
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z)
                 {
                     game(window);
                 }
+                if (keyPressed->scancode == sf::Keyboard::Scan::X)
+                {
+                    saveRun(cscore, window);
+                }
+
             }
         }
-   //     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) {
-   //         //instead of loading game, display an intermediate screen (new function) to ask for the run's name
-   //         // run's name will be a character array of fixed size
-			////Then pass that name to game function to save the run under that name.
-   //         //That name will be passed to the saveRun() function along with the score in that run
-   //         //to store in a binary file
-   //         game(window);
-			////when the game function returns, return the intermediate screen to main menu
-   //     }
+
         window.clear();
         window.draw(mainmenu);
         window.display();
@@ -75,10 +72,10 @@ void mmenu(sf::RenderWindow& window) {
 
 void game(sf::RenderWindow& window) {
 
-    float jumprotate = 433.7349f, 
-        jumpspeed = 500.f, 
-        groundlevel = 450.f, 
-        maxjump = 200.f, 
+    float jumprotate = 433.7349f,
+        jumpspeed = 500.f,
+        groundlevel = 450.f,
+        maxjump = 200.f,
         xorigin = 150,
         deltaTime;
 
@@ -88,33 +85,45 @@ void game(sf::RenderWindow& window) {
     player.setOrigin({ 50, 50 });
     player.setPosition({ xorigin, groundlevel });
 
-	sf::Texture btexture("Assets\\Sprites\\background.png");
-	btexture.setSmooth(true);
+    sf::Texture btexture("Assets\\Sprites\\background.png");
+    btexture.setSmooth(true);
     sf::Sprite background(btexture);
-	background.setPosition({ 0.f, 0.f });
+    background.setPosition({ 0.f, 0.f });
 
-	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
-	otexture.setSmooth(true);
+    sf::Texture otexture[3];
+    std::string paths[3] = { "Assets\\Sounds\\obstacle_0.png", "Assets\\Sounds\\obstacle_1.png", "Assets\\Sounds\\obstacle_2.png"
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (!otexture[i].loadFromFile(paths[i])) {
+            std::cerr << "Could not load texture file: " << std::endl;
+            return;
+        }
+        otexture[i].setSmooth(true);
+    }
 
 
     sf::ConvexShape obstacle[3];
-    obstacle[0].setPointCount(3);
-    obstacle[0].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[0].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[0].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[0].setFillColor(sf::Color::Red);
+    obstacle[0].setPointCount(4);
+    obstacle[0].setPoint(0, sf::Vector2f(0, 0));
+    obstacle[0].setPoint(1, sf::Vector2f(100, 100));
+    obstacle[0].setPoint(2, sf::Vector2f(0, 100));
+    obstacle[0].setPoint(3, sf::Vector2f(100, 0));
+    obstacle[0].setTexture(&otexture[0]);
 
-    obstacle[1].setPointCount(3);
-    obstacle[1].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[1].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[1].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[1].setFillColor(sf::Color::Green);
+    obstacle[1].setPointCount(4);
+    obstacle[1].setPoint(0, sf::Vector2f(0, 0));
+    obstacle[1].setPoint(1, sf::Vector2f(100, 100));
+    obstacle[1].setPoint(2, sf::Vector2f(0, 100));
+    obstacle[1].setPoint(3, sf::Vector2f(100, 0));
+    obstacle[1].setTexture(&otexture[1]);
 
-    obstacle[2].setPointCount(3);
-    obstacle[2].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[2].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[2].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[2].setFillColor(sf::Color::Blue);
+    obstacle[2].setPointCount(4);
+    obstacle[2].setPoint(0, sf::Vector2f(0, 0));
+    obstacle[2].setPoint(1, sf::Vector2f(100, 100));
+    obstacle[2].setPoint(2, sf::Vector2f(0, 100));
+    obstacle[2].setPoint(3, sf::Vector2f(100, 0));
+    obstacle[2].setTexture(&otexture[2]);
 
     sf::Vector2f positions[3];
     positions[0].x = 1000;
@@ -126,36 +135,34 @@ void game(sf::RenderWindow& window) {
     positions[2].y = 416;
 
 
-    obstacle[0].setPosition({1000, 416});
-    obstacle[1].setPosition({1600 , 416});
-    obstacle[2].setPosition({2100, 416});
+    obstacle[0].setPosition({ 1000, 416 });
+    obstacle[1].setPosition({ 1600 , 416 });
+    obstacle[2].setPosition({ 2100, 416 });
 
     float obsSpeed = 550.f;
     int min = 475;
 
-    bool canjump = false, 
+    bool canjump = false,
         canjump1 = false;
 
     sf::Clock clock, scoreclock;
-    int cscore = 0;
-
     std::string sscore = "";
-
+    //int cscore = 0;
 
     sf::Text scoretext(font, sscore);
     sf::Text scoreheader(font, "SCORE: ");
-	sf::Text controls(font, "Z:   JUMP\nC:   MENU");
+    sf::Text controls(font, "Z:   JUMP\nC:   MENU");
     scoreheader.setPosition({ 25.f, 100.f });
     scoretext.setPosition({ 150.f, 100.f });
-    controls.setPosition({25.f, 10.f});
+    controls.setPosition({ 25.f, 10.f });
 
 
     sf::SoundBuffer buffer;
-    if (!buffer.loadFromFile("Assets\\Sounds\\beep.wav")) {
+    if (!buffer.loadFromFile("Assets\\Sounds\\jumpy_jumpy.wav")) {
         std::cout << "Sound file not found!" << std::endl;
         return;
     }
-    sf::Sound beep(buffer);
+    sf::Sound jump(buffer);
 
     bool spaces = true;
 
@@ -163,8 +170,8 @@ void game(sf::RenderWindow& window) {
     {
         deltaTime = clock.restart().asSeconds();
 
-		cscore = score(scoreclock); //score calculation in cscore, store cscore when run ends (pressed C or ran into obstacles)
-		sscore = std::to_string(cscore);
+        cscore = score(scoreclock); //score calculation in cscore, store cscore when run ends (pressed C or ran into obstacles)
+        sscore = std::to_string(cscore);
         scoretext.setString(sscore);
 
         while (const std::optional event = window.pollEvent())
@@ -175,19 +182,29 @@ void game(sf::RenderWindow& window) {
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
-                if (keyPressed->scancode == sf::Keyboard::Scan::C)
-                {   //save here
-                    return;
+                if (keyPressed->scancode == sf::Keyboard::Scan::C) {
+                    window.close();
+                }
+                if (keyPressed->scancode == sf::Keyboard::Scan::X) {
+                    //save here
+                    //std::cout << "Hello" << std::endl;
+                    //instead of loading game, display an intermediate screen (new function) to ask for the run's name
+                    //run's name will be a character array of fixed size
+                    //Then pass that name to game function to save the run under that name.
+                    //That name will be passed to the saveRun() function along with the score in that run
+                    //to store in a binary file
+
+                    //when the game function returns, return the intermediate screen to main menu
                 }
             }
         }
 
-        if (player.getPosition().y >= groundlevel -5.f) {
+        if (player.getPosition().y >= groundlevel - 5.f) {
             player.setRotation(sf::degrees(0.f));
         }
 
         if (canjump) {
-            player.move({ 0.0f, (-(jumpspeed) * deltaTime) });
+            player.move({ 0.0f, (-(jumpspeed)*deltaTime) });
             player.rotate(sf::degrees(jumprotate * deltaTime));
         }
         if (player.getPosition().y <= groundlevel - maxjump && canjump) {
@@ -199,21 +216,21 @@ void game(sf::RenderWindow& window) {
             player.rotate(sf::degrees(jumprotate * deltaTime));
         }
 
-        if (player.getPosition().y >= groundlevel - 5.f 
-            && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)) 
-            && canjump1) 
+        if (player.getPosition().y >= groundlevel - 5.f
+            && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z))
+            && canjump1)
         {
             player.setPosition({ player.getPosition().x, groundlevel });
             canjump1 = false;
         }
-        
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)
             && !canjump && player.getPosition().y >= groundlevel - 5.f &&
-            !canjump1) 
+            !canjump1)
         {
             canjump = true;
             canjump1 = true;
-            beep.play();
+            jump.play();
         }
 
 
@@ -227,17 +244,17 @@ void game(sf::RenderWindow& window) {
 
         if (obstacle[0].getPosition().x < -100) {
             positions[0].x = positions[2].x + rand() % 200 + min;;
-                obstacle[0].setPosition(positions[0]);
+            obstacle[0].setPosition(positions[0]);
         }
 
         if (obstacle[1].getPosition().x < -100) {
-                positions[1].x = positions[0].x + rand() % 200 + min;
-                obstacle[1].setPosition(positions[1]);
+            positions[1].x = positions[0].x + rand() % 200 + min;
+            obstacle[1].setPosition(positions[1]);
         }
 
         if (obstacle[2].getPosition().x < -100) {
-                positions[2].x = positions[1].x + rand() % 200 + min;
-                obstacle[2].setPosition(positions[2]);
+            positions[2].x = positions[1].x + rand() % 200 + min;
+            obstacle[2].setPosition(positions[2]);
         }
 
 
@@ -250,10 +267,10 @@ void game(sf::RenderWindow& window) {
         window.clear();
         window.draw(background);
         window.draw(controls);
-		window.draw(scoreheader);
+        window.draw(scoreheader);
         window.draw(scoretext);
         window.draw(player);
-        for(i=0; i<3; i++)
+        for (i = 0; i < 3; i++)
             window.draw(obstacle[i]);
 
         window.display();
@@ -279,21 +296,54 @@ int score(sf::Clock& clock) {
     int bonus = 1;
     int scale = 50;
 
-    if (clock.getElapsedTime().asMilliseconds()/scale > 100) {
+    if (clock.getElapsedTime().asMilliseconds() / scale > 100) {
         bonus = 2;
     }
-    else if (clock.getElapsedTime().asMilliseconds()/scale > 300) {
+    else if (clock.getElapsedTime().asMilliseconds() / scale > 300) {
         bonus = 3;
     }
-    else if (clock.getElapsedTime().asMilliseconds()/scale > 1000) {
+    else if (clock.getElapsedTime().asMilliseconds() / scale > 1000) {
         bonus = 4;
     }
 
-    return (int)(clock.getElapsedTime().asMilliseconds()/scale * bonus);
+    return (int)(clock.getElapsedTime().asMilliseconds() / scale * bonus);
 }
 
-void saveRun(int score) {
+void saveRun(int cscore, sf::RenderWindow& window) {
+    sf::Texture btexture("Assets\\Sprites\\background.png");
+    btexture.setSmooth(true);
+    sf::Sprite background(btexture);
+    background.setPosition({ 0.f, 0.f });
+    sf::Text message(font, "ENTER RUNNER'S NAME: ");
+    message.setPosition(sf::Vector2f{ 288, 290 });
 
+    std::string str;
+    std::cin >> str;
+
+
+
+
+
+    while (window.isOpen()) {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scan::C)
+                {
+                    window.close();
+                }
+            }
+        }
+        window.clear();
+        window.draw(background);
+        window.draw(message);
+        window.display();
+
+    }
 }
 
 void loadScores() {
