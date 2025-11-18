@@ -7,12 +7,14 @@
 #include<ctime>
 #include<cstdlib>
 
-void game(sf::RenderWindow& window);
+int game(sf::RenderWindow& window);
+void enterName(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
-void saveRun(int score);
+void saveRun(std::string , int score);
 void loadScores();
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
+sf::ConvexShape* setObstacles(const int n);
 
 sf::Font font;
 
@@ -54,7 +56,7 @@ void mmenu(sf::RenderWindow& window) {
 
                 if (keyPressed->scancode == sf::Keyboard::Scan::Z)
                 {
-                    game(window);
+					enterName(window);
                 }
             }
         }
@@ -72,8 +74,11 @@ void mmenu(sf::RenderWindow& window) {
         window.display();
     }
 }
-
-void game(sf::RenderWindow& window) {
+//
+//
+//
+//
+int game(sf::RenderWindow& window) {
 
     float jumprotate = 433.7349f, 
         jumpspeed = 500.f, 
@@ -96,39 +101,21 @@ void game(sf::RenderWindow& window) {
 	sf::Texture otexture("Assets\\Sprites\\obstacle.png");
 	otexture.setSmooth(true);
 
-
-    sf::ConvexShape obstacle[3];
-    obstacle[0].setPointCount(3);
-    obstacle[0].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[0].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[0].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[0].setFillColor(sf::Color::Red);
-
-    obstacle[1].setPointCount(3);
-    obstacle[1].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[1].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[1].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[1].setFillColor(sf::Color::Green);
-
-    obstacle[2].setPointCount(3);
-    obstacle[2].setPoint(0, sf::Vector2f(0, 90));
-    obstacle[2].setPoint(1, sf::Vector2f(80, 90));
-    obstacle[2].setPoint(2, sf::Vector2f(40, 0));
-    obstacle[2].setFillColor(sf::Color::Blue);
+	sf::ConvexShape* obstacle = setObstacles(3);
 
     sf::Vector2f positions[3];
     positions[0].x = 1000;
-    positions[1].x = 1500;
-    positions[2].x = 2000;
+    positions[1].x = 1600;
+    positions[2].x = 2100;
 
     positions[0].y = 416;
     positions[1].y = 416;
     positions[2].y = 416;
 
 
-    obstacle[0].setPosition({1000, 416});
-    obstacle[1].setPosition({1600 , 416});
-    obstacle[2].setPosition({2100, 416});
+    obstacle[0].setPosition(positions[0]);
+    obstacle[1].setPosition(positions[1]);
+    obstacle[2].setPosition(positions[2]);
 
     float obsSpeed = 550.f;
     int min = 475;
@@ -142,7 +129,7 @@ void game(sf::RenderWindow& window) {
     std::string sscore = "";
 
 	int speeds[5] = { 550, 700, 750, 800, 1000 };
-	int mins[5] = { 475, 550, 625, 690, 730 };
+	int mins[5] = { 510, 575, 625, 690, 730 };
 
     sf::Text scoretext(font, sscore);
     sf::Text scoreheader(font, "SCORE: ");
@@ -153,9 +140,9 @@ void game(sf::RenderWindow& window) {
 
 
     sf::SoundBuffer buffer;
-    if (!buffer.loadFromFile("Assets\\Sounds\\beep.wav")) {
+    if (!buffer.loadFromFile("Assets\\Sounds\\jumpy_jumpy.wav")) {
         std::cout << "Sound file not found!" << std::endl;
-        return;
+        return cscore;
     }
     sf::Sound beep(buffer);
 
@@ -185,7 +172,9 @@ void game(sf::RenderWindow& window) {
             {
                 if (keyPressed->scancode == sf::Keyboard::Scan::C)
                 {   //save here
-                    return;
+                    delete[] obstacle;
+					std::cout << "deleted obstacles" << std::endl;
+                    return cscore;
                 }
             }
         }
@@ -243,7 +232,9 @@ void game(sf::RenderWindow& window) {
 
         for (i = 0; i < 3; i++) {
             if (checkCollision(player, obstacle[i])) {
-                return;
+                delete[] obstacle;
+                std::cout << "deleted obstacles" << std::endl;
+                return cscore;
             }
         }
 
@@ -259,7 +250,10 @@ void game(sf::RenderWindow& window) {
         window.display();
     }
 }
-
+//
+//
+//
+//
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle)
 {
     sf::FloatRect playerBounds = player.getGlobalBounds();
@@ -272,8 +266,10 @@ bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle)
 
     return false;
 }
-
-
+//
+//
+//
+//
 int score(sf::Clock& clock) {
 
     int bonus = 1;
@@ -291,11 +287,90 @@ int score(sf::Clock& clock) {
 
     return (int)(clock.getElapsedTime().asMilliseconds()/scale * bonus);
 }
-
-void saveRun(int score) {
+//
+//
+//
+//
+sf::ConvexShape* setObstacles(const int n) {
+    sf::ConvexShape* obstacles = new sf::ConvexShape[n];
+    for (int i = 0; i < n; i++) {
+        obstacles[i].setPointCount(3);
+        obstacles[i].setPoint(0, sf::Vector2f(0, 90));
+        obstacles[i].setPoint(1, sf::Vector2f(80, 90));
+        obstacles[i].setPoint(2, sf::Vector2f(40, 0));
+        obstacles[i].setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
+    }
+    return obstacles;
+}
+//
+//
+//
+//
+void saveRun(std::string name, int score) {
+	std::cout << std::endl << "Saving run for " << name << " with score " << score << std::endl;
+}
+//
+//
+//
+//
+void loadScores() {
 
 }
 
-void loadScores() {
+void enterName(sf::RenderWindow& window) {
+
+	sf::Text entername(font, "ENTER NAME:");
+	entername.setPosition({ 200, 250 });
+
+    sf::String userInput;
+	sf::Text userinput(font, "");
+	userinput.setPosition({ 450, 250 });
+
+
+    std::string playerName = userInput.toAnsiString();
+
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+
+            if (const auto* keyPressed = event->getIf<sf::Event::TextEntered>())
+            {
+                if (keyPressed->unicode == 8) {
+                    if (!userInput.isEmpty())
+                    {
+                        userInput.erase(userInput.getSize() - 1);
+                        playerName = userInput.toAnsiString();
+                    }
+                }
+
+                else if (keyPressed->unicode < 128 && keyPressed -> unicode != 13) // Ensure it's an ASCII character
+                {
+                    userInput += static_cast<char>(keyPressed->unicode);
+                    playerName = userInput.toAnsiString();
+				}
+
+                else {
+                    if (keyPressed->unicode == 13) { // Enter key
+                        std::cout << "Player Name: " << playerName << std::endl;
+                        int score = game(window);
+						saveRun(playerName, score);
+                        return;
+					}
+                }
+            }
+
+			userinput.setString(playerName);
+        }
+
+
+        window.clear();
+        window.draw(entername);
+        window.draw(userinput);
+		window.display();
+    }
 
 }
