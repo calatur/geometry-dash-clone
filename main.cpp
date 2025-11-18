@@ -91,8 +91,9 @@ void game(sf::RenderWindow& window) {
     sf::ConvexShape obstacle;
     obstacle.setPointCount(3);
     obstacle.setPoint(0, sf::Vector2f(0, 90));
-    obstacle.setPoint(1, sf::Vector2f(80, 90));
-    obstacle.setPoint(2, sf::Vector2f(40, 0));
+    obstacle.setPoint(1, sf::Vector2f(90, 90));
+    obstacle.setPoint(2, sf::Vector2f(45, 0));
+    obstacle.setPosition({ 1000, 416 });
     obstacle.setFillColor(sf::Color::White);
     float obsSpeed = 550.f;
 
@@ -184,8 +185,28 @@ void game(sf::RenderWindow& window) {
 
         obstacle.move({ -obsSpeed * deltaTime, 0 });
         if (obstacle.getPosition().x < -100) {
-            obstacle.setPosition({ 900, 416 });
+            float randomX = 500.f + (rand() % 400);
+            obstacle.setFillColor(sf::Color(
+                rand() % 201+55,
+                rand() % 201+55,
+                rand() % 201+55
+            ));
+            int r = rand() % 3;
+            if (r == 2) {
+               obstacle.setScale({ 1.25, 1.25 });
+               obstacle.setPosition({ randomX, 394 });
+            }
+            else if (r == 1) {
+                obstacle.setScale({ 0.75, 0.75 });
+                obstacle.setPosition({ randomX, 438 });
+            }
+            else {
+                obstacle.setScale({ 1, 1 });
+                obstacle.setPosition({ randomX, 416 });
+            }
+            obsSpeed = 550.f + (rand() % 200); 
         }
+
         if (checkCollision(player, obstacle))
         {
             std::cout << "Collision!\n";
