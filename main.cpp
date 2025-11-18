@@ -6,17 +6,19 @@
 #include<fstream>
 #include<ctime>
 #include<cstdlib>
+#include<cstring>
 
 int game(sf::RenderWindow& window);
 void enterName(sf::RenderWindow& window);
 void mmenu(sf::RenderWindow& window);
 int score(sf::Clock& clock);
 void saveRun(std::string , int score);
-void loadScores(sf::RenderWindow& window);
 bool checkCollision(const sf::Sprite& player, const sf::ConvexShape& obstacle);
 sf::ConvexShape* setObstacles(const int n);
 int quitGame(sf::RenderWindow& window);
 void lost(sf::RenderWindow& window, int score);
+void highest_score(char** name, int score[], int count);
+void Records(sf::RenderWindow& window);
 
 sf::Font font;
 
@@ -26,6 +28,14 @@ int main()
     if (!(font.openFromFile("Assets\\Fonts\\8bitOperatorPlus8-Bold.ttf"))) {
         std::cout << "could not open font file";
     }
+
+	std::ifstream fin("Scores.xyz", std::ios::binary);
+    if (!fin) {
+        std::cout << "No file!" << std::endl;
+        std::ofstream errorfile("Scores.xyz", std::ios::out);
+        errorfile.close();
+    }
+    fin.close();
 
     sf::RenderWindow window(sf::VideoMode({ 1000, 600 }), "Geomentry Dash Endless");
     window.setKeyRepeatEnabled(false);
@@ -64,7 +74,7 @@ void mmenu(sf::RenderWindow& window) {
 
                 if (keyPressed->scancode == sf::Keyboard::Scan::X)
                 {
-					loadScores(window);
+					Records(window);
                 }
             }
         }
@@ -312,46 +322,24 @@ sf::ConvexShape* setObstacles(const int n) {
 //
 void saveRun(std::string name, int score) {
 	std::cout << std::endl << "Saving run for " << name << " with score " << score << std::endl;
-}
-//
-//
-//
-//
-void loadScores(sf::RenderWindow& window) {
-
-	sf::Text scoreheader(font, "HIGH SCORES:");
-	sf::Text returnmenu(font, "(PRESS C TO RETURN TO MENU)");
-	scoreheader.setPosition({ 400.f, 50.f });
-	returnmenu.setPosition({ 275.f, 550.f });
-
-    while (window.isOpen()) {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-            }
-
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-            {
-                if (keyPressed->scancode == sf::Keyboard::Scan::C) {
-                    return;
-                }
-            }
-
-
-        }
-        
-        window.clear();
-        window.draw(scoreheader);
-		window.draw(returnmenu);
-        window.display();
-    }
+    std::ofstream fout("Scores.xyz", std::ios::app | std::ios::binary);
+    char arr[30] = { 0 };
+    int len = std::min(29, (int)name.size());
+    memcpy(arr, name.c_str(), len);
+    fout.write(arr, 30);
+    fout.write((char*)&score, sizeof(score));
+    fout.close();
 }
 //
 //
 //
 //
 void enterName(sf::RenderWindow& window) {
+
+    sf::Texture btexture("Assets\\Sprites\\background.png");
+    btexture.setSmooth(true);
+    sf::Sprite background(btexture);
+    background.setPosition({ 0.f, 0.f });
 
 	sf::Text entername(font, "ENTER NAME:");
 	entername.setPosition({ 200, 250 });
@@ -360,7 +348,7 @@ void enterName(sf::RenderWindow& window) {
 	sf::Text userinput(font, "");
 	userinput.setPosition({ 450, 250 });
 
-
+    bool ignoreFirstInput = true;
     std::string playerName = userInput.toAnsiString();
 
     while (window.isOpen())
@@ -373,6 +361,14 @@ void enterName(sf::RenderWindow& window) {
 
             if (const auto* keyPressed = event->getIf<sf::Event::TextEntered>())
             {
+
+                if (ignoreFirstInput) {
+                    ignoreFirstInput = false;
+                    continue;
+                }
+
+
+
                 if (keyPressed->unicode == 8) {
                     if (!userInput.isEmpty())
                     {
@@ -402,14 +398,22 @@ void enterName(sf::RenderWindow& window) {
 
 
         window.clear();
+        window.draw(background);
         window.draw(entername);
         window.draw(userinput);
 		window.display();
     }
 
 }
-
+//
+//
+//
+//
 int quitGame(sf::RenderWindow& window){
+    sf::Texture btexture("Assets\\Sprites\\background.png");
+    btexture.setSmooth(true);
+    sf::Sprite background(btexture);
+    background.setPosition({ 0.f, 0.f });
 
     sf::Text quittext(font, "QUIT GAME?");
     sf::Text confirmtext(font, "YES (Z)\tNo (C)");
@@ -441,6 +445,7 @@ int quitGame(sf::RenderWindow& window){
             }
 
             window.clear();
+            window.draw(background);
             window.draw(quittext);
 			window.draw(confirmtext);
             window.display();
@@ -448,7 +453,10 @@ int quitGame(sf::RenderWindow& window){
         }
     }
 }
-
+//
+//
+//
+//
 void lost(sf::RenderWindow& window, int score) {
     sf::Text losttext(font, "YOU LOST!");
     sf::Text scoretext(font, "SCORE: " + std::to_string(score));
@@ -474,5 +482,113 @@ void lost(sf::RenderWindow& window, int score) {
         window.draw(scoretext);
         window.draw(menutext);
         window.display();
+    }
+}
+
+
+
+
+
+
+void Records(sf::RenderWindow& window) {
+    sf::Texture btexture("Assets\\Sprites\\background.png");
+    btexture.setSmooth(true);
+    sf::Sprite background(btexture);
+    background.setPosition({ 0.f, 0.f });
+
+    int* scores = nullptr;
+    char** names = nullptr;
+    int count = 0;
+
+
+    char ch[30];
+    std::ifstream fin("Scores.xyz", std::ios::binary);
+    if (!fin) { 
+        std::cout << "No file!" << std::endl;
+		std::ofstream errorfile("Scores.xyz", std::ios::out);
+        return; 
+    }
+
+    while (fin.read((char*)ch, 30)) {
+        int sc;
+        if (!fin.read((char*)&sc, sizeof(sc))) break;
+
+        int* newScores = new int[count + 1];
+        char** newNames = new char* [count + 1];
+
+        for (int i = 0; i < count; i++) {
+            newScores[i] = scores[i];
+            newNames[i] = new char[strlen(names[i]) + 1];
+            strcpy_s(newNames[i], strlen(names[i]) + 1, names[i]);
+        }
+
+        newScores[count] = sc;
+        newNames[count] = new char[strlen(ch) + 1];
+        strcpy_s(newNames[count], strlen(ch) + 1, ch);
+
+        delete[] scores;
+        for (int i = 0; i < count; i++) delete[] names[i];
+        delete[] names;
+
+        scores = newScores;
+        names = newNames;
+        count++;
+    }
+    fin.close();
+
+    highest_score(names, scores, count);
+
+    sf::Text title(font, "HIGH SCORES", 50);
+    title.setFillColor(sf::Color(210, 200, 23));
+    title.setPosition({ 350.f, 20.f });
+    sf::Text info(font, "Press C to return to Menu", 25);
+    info.setPosition({ 300.f, 550.f });
+
+    sf::Text scoreTexts[5] = { sf::Text(font), sf::Text(font), sf::Text(font), sf::Text(font), sf::Text(font) };
+    int displayCount = std::min(5, count);
+    for (int i = 0; i < displayCount; i++) {
+        std::string s = std::string(names[i]) + " : " + std::to_string(scores[i]);
+        scoreTexts[i].setFont(font);
+        scoreTexts[i].setString(s);
+        scoreTexts[i].setCharacterSize(30);
+        scoreTexts[i].setPosition({ 350.f, 100.f + i * 50.f });
+    }
+
+
+
+while (window.isOpen()) {
+    while (const std::optional event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) window.close();
+
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (keyPressed->scancode == sf::Keyboard::Scan::C) {
+                for (int i = 0; i < count; i++) delete[] names[i];
+                delete[] names;
+                delete[] scores;
+                return;
+            }
+        }
+    }
+
+    window.clear();
+    window.draw(background);
+    window.draw(title);
+    window.draw(info);
+    for (int i = 0; i < displayCount; i++) window.draw(scoreTexts[i]);
+    window.display();
+}
+}
+//
+//
+//
+//
+void highest_score(char** name, int score[], int count) {
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - 1 - i; j++) {
+            if (score[j] < score[j + 1]) {
+                std::swap(score[j], score[j + 1]);
+                std::swap(name[j], name[j + 1]);
+            }
+        }
     }
 }
