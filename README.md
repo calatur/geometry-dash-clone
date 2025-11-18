@@ -3,6 +3,11 @@ This is the structured version of our OOP Project, a simple Geometry Dash Clone.
 It is built using SFML 3.0.2 for VC++ 17 for the 64-bit Windows platform
 The Version used for SFML is the one for the Visual Studio compiler (MSVC)
 
+# Group-Members
+ 1. Muhammad Ali (BCSF24A024)
+ 2. Muhammad Hassan (BCSF24A025)
+ 3. Muhammad Abdullah (BCSF24A037)
+
 # run-requirements
 To open the project with all the required settings, Visual Studio 2022 or later.
 To run any build or exe, the .dll files uploaded in the repository are required.
